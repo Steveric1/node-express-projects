@@ -1,0 +1,63 @@
+const express = require("express");
+const { products } = require("./data");
+
+const app = express();
+
+app.get("/", (req, res) => {
+	res.send('<h1>Home Page </h1><a href="/api/products">products</a>');
+});
+
+app.get("/api/products/:productId", (req, res) => {
+	// console.log(req);
+	// console.log(req.params)
+	const { productId } = req.params;
+	const singleProduct = products.find((product) => product.id === +productId);
+	// const newProducts = products.map((product) => {
+	// 	const { id, name, image } = product;
+	// 	return { id, name, image };
+	// });
+
+	if (singleProduct) {
+		res.json(singleProduct);
+	} else {
+		res.send("We can not find the product Id you are looking for!");
+	}
+
+	// res.json(newProducts);
+});
+
+app.get("/api/products/:productId/reviews/:reviewId", (req, res) => {
+	res.send("Hello world");
+	console.log(req.query);
+	console.log(req.params);
+	console.log(req);
+});
+
+app.get("/api/products/v1/query", (req, res) => {
+	const { search, limit } = req.query;
+	let sortedProducts = [...products];
+
+	if (!isFinite(search)) {
+		sortedProducts = sortedProducts.filter((product) => {
+			return product.name.startsWith(search);
+		});
+	} else {
+		sortedProducts = sortedProducts.filter((product) => {
+			return product.price.toString().startsWith(search)
+		})
+	}
+
+	if (limit) {
+		sortedProducts = sortedProducts.slice(0, +limit);
+	}
+
+	if (sortedProducts.length < 1) {
+		return  res.status(200).send('no products match your search');
+	}
+
+	res.status(200).json({'succes': true, 'data': sortedProducts});
+});
+
+app.listen(3000, "127.0.0.1", () => {
+	console.log("server running on http://127.0.0.1:3000");
+});
